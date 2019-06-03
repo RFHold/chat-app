@@ -42,11 +42,15 @@ $(document).ready(function () {
 
         //request links for api
         const groupsLink = (channel) => { return `/api/groups` }
+        const groupLink = (group) => { return `/api/group/${group}` }
         const groupsWSLink = (group) => { return `/ws/groups/${group}` }
         const WSLink = () => { return `/ws` }
         const membersLink = (group) => { return `/api/members/${group}` }
+        const memberLink = (group) => { return `/api/member/${group}` }
         const channelsLink = (group) => { return `/api/channels/${group}` }
+        const channelLink = (group) => { return `/api/channel/${group}` }
         const messagesLink = (channel) => { return `/api/messages/${channel}` }
+        const messageLink = (channel) => { return `/api/message/${channel}` }
 
         // constructs the session 
         this.Session = function() {
@@ -206,18 +210,21 @@ $(document).ready(function () {
         const renderGroups = (groups) => {
             groupsContainer.find("li:not(.static)").remove()
             for (group of groups) {
-                groupsContainer.append(buildButton(group.channelsAPIPath, group.name, "channels", group.id))
+                groupsContainer.append(buildButton(group.channelsAPIPath, group.name, "channels", group.id, groupLink(group.id)))
             }
         }
 
         // constructs the button for channels 
-        const buildButton = (link, text, action, id) => {
+        const buildButton = (link, text, action, id, deletePath, editPath) => {
             const buttonContainer = $("<li>").addClass("nav-item")
+            const deleteForm = $("<form>").addClass("ajaxForm").attr("method", "DELETE").attr("action",deletePath)
+            deleteForm.append($("<button>").attr("type", "submit").html(`<i class="fas fa-trash-alt"></i>`))
             buttonContainer.append($("<a>")
                 .addClass("nav-link action-button")
                 .attr("href", link)
                 .attr("data-context", id)
                 .attr("data-action", action).text(text))
+                buttonContainer.append(deleteForm)
             return buttonContainer
         }
 
