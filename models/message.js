@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
       getterMethods: {
         mapData() {
-          return { id: this.id, body: this.body }
+          return { id: this.id, body: this.body, username: this.User.username, timestamp: this.createdAt }
         }
       }
     });

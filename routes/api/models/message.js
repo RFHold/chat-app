@@ -19,10 +19,17 @@ module.exports = function (app, socket) {
                 channel.createMessage({
                     body: req.body.body,
                     user: sessionUser.id,
-                    group: channel.group
-                }).then(message => {
-                    socket.send("message", message.body, message.group, message.channel)
-                    res.status(200).json({ success: true, message: message.mapData })
+                    group: channel.group                
+                }).then(message => {                  
+                    db.Message.findOne({
+                        where:{id: message.id}, 
+                        include:[{
+                            model: db.User
+                        }]
+                    }).then(message => {
+                        socket.send("message", message.mapData, message.group, message.channel)
+                        res.status(200).json({ success: true, message: message.mapData })
+                    })     
                 })
             })
         }).catch(error => {
@@ -33,7 +40,7 @@ module.exports = function (app, socket) {
     app.get("/api/messages/:channel", function (req, res) {
         session.user(req).then(sessionUser => {
             db.Message.findAll({
-                include: [{
+                include: [{model: db.User},{ 
                     model: db.Channel,
                     where: { id: req.params.channel },
                     include: [{

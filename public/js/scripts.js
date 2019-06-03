@@ -180,7 +180,7 @@ $(document).ready(function () {
                         getMessages(messagesLink(context)).then(messages => { 
                             messagesContainer.find(".list-group-item").remove()
                             for (message of messages) {
-                                messagesContainer.prepend(buildMessage(message.body))
+                                messagesContainer.prepend(buildMessage(message))
                             }
                         })
                         messageForm.attr("action", messagesLink(context))
@@ -223,7 +223,7 @@ $(document).ready(function () {
 
         // constructs the message and puts it in the message div
         const buildMessage = (message) => {
-            const messageContainer = $("<li>").addClass("list-group-item").text(message)
+            const messageContainer = $("<li>").addClass("list-group-item").html(`${message.username}: ${message.body}`)
             return messageContainer
         }
 
