@@ -150,7 +150,7 @@ $(document).ready(function () {
                         channelsContainer.append(buildButton(message.body.messagesAPIPath, message.body.name, "messages", message.body.id))
                         break;
                     case "member":
-                        groupsContainer.append(buildButton(message.body.channelsAPIPath, message.body.name, "channels", message.body.id))
+                        groupsContainer.append(buildButton(message.body.channelsAPIPath, message.body.name, "channels", message.body.id, groupLink(message.body.id)))
                         break;
                 }
             }
@@ -217,16 +217,20 @@ $(document).ready(function () {
         // constructs the button for channels 
         const buildButton = (link, text, action, id, deletePath, editPath) => {
             const buttonContainer = $("<li>").addClass("nav-item")
-            const parent = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center")
+            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center")
+            const actionsContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center")
             const deleteForm = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action",deletePath)
             deleteForm.append($("<button>").addClass("btn btn-outline-danger ").attr("type", "submit").html(`<i class="fas fa-trash-alt "></i>`))
-            parent.append($("<a>")
+            const editForm = $("<form>").addClass("ajaxForm m-1").attr("method", "PATCH").attr("action",editPath)
+            editForm.append($("<button>").addClass("btn btn-outline-secondary ").attr("type", "submit").html(`<i class="fas fa-pen"></i>`))
+            flexContainer.append($("<a>")
                 .addClass("nav-link action-button")
                 .attr("href", link)
                 .attr("data-context", id)
                 .attr("data-action", action).text(text))
-                parent.append(deleteForm)
-            return buttonContainer.append(parent)
+                flexContainer.append(editForm)
+                flexContainer.append(deleteForm)
+            return buttonContainer.append(flexContainer)
         }
 
         // constructs the message and puts it in the message div
