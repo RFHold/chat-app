@@ -218,7 +218,7 @@ $(document).ready(function () {
         const buildButton = (link, text, action, id, deletePath, editPath) => {
             const buttonContainer = $("<li>").addClass("nav-item")
             const deleteForm = $("<form>").addClass("ajaxForm").attr("method", "DELETE").attr("action",deletePath)
-            deleteForm.append($("<button>").attr("type", "submit").html(`<i class="fas fa-trash-alt"></i>`))
+            deleteForm.append($("<button>").addClass("btn btn-outline-danger").attr("type", "submit").html(`<i class="fas fa-trash-alt "></i>`))
             buttonContainer.append($("<a>")
                 .addClass("nav-link action-button")
                 .attr("href", link)
