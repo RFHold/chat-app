@@ -34,6 +34,7 @@ $(document).ready(function () {
         const groupsContainer = $("#groups > ul")
         const channelsDrawer = $("#channels").hide()
         const channelsContainer = $("#channels > ul")
+        const membersContainer = $("#members > ul")
         const messagesContainer = $("#view > .messages > .list-group")
         const messageForm = $("#message-form")
         const createChannelButton = $("#create-channel-button")
@@ -173,6 +174,12 @@ $(document).ready(function () {
                                 channelsContainer.append(buildButton(channel.messagesAPIPath, channel.name, "messages", channel.id))
                             }
                         })
+                        getMembers(membersLink(context)).then(members => {
+                            membersContainer.find("li:not(.static)").remove()
+                        for (member of members){
+                            membersContainer.append(buildButton(memberLink(member.id), member.username, "member", member.id,memberLink(member.id) ))
+                        }
+                        })
                         messageForm.attr("action", "")
                         createChannelButton.attr("href", channelsLink(context)).attr("data-context", context)
                         addMemberButton.attr("href", membersLink(context)).attr("data-context", context)
@@ -247,6 +254,19 @@ $(document).ready(function () {
                     method: "GET"
                 }).then(function (response) {
                     resolve(response.messages);
+                }).catch(function (error) {
+                    reject(error);
+                });
+            })
+        }
+        // gets the members for a given group.
+        const getMembers = (link) => {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: link,
+                    method: "GET"
+                }).then(function (response) {
+                    resolve(response.members);
                 }).catch(function (error) {
                     reject(error);
                 });

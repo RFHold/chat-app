@@ -32,7 +32,7 @@ module.exports = function (app, socket) {
     app.get("/api/members/:group", function (req, res) {
         session.user(req).then(sessionUser => {
             db.Member.findAll({
-                include: [{
+                include: [{model: db.User},{
                     model: db.Group,
                     where: { id: req.params.group },
                     include: [{

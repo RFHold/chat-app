@@ -30,17 +30,20 @@ head
                   a.nav-link.mb-1.btn-secondary.action-button#create-group-button(href="/createGroup" data-action="createGroup") Create Group
       #channels.h-100
           ul.nav.flex-column.navbar-light.bg-light.h-100.border-right.text-nowrap.nav-pills.p-2
-              li.nav-item.static.d-flex.flex-row
-                  a.nav-link.mb-1.btn-secondary.action-button#create-channel-button(href="#" data-action="createChannel") Create Channel
-                  a.nav-link.mb-1.btn-light.action-button#add-member-button.ml-1(href="#" data-action="addMember") Add Member
+              li.nav-item.static
+                  a.nav-link.mb-1.btn-secondary.action-button#create-channel-button(href="#" data-action="createChannel") Create Channel              
       #view.w-100.h-100.position-relative.d-flex.flex-column
           nav.navbar.w-100.navbar-light.bg-light.border-bottom
-              form#message-form.ajaxForm.form-inline(action="" method="POST")
-                  input.form-control.mr-sm-2(type='text' placeholder='Message' name='body')
-                  button.btn.btn-primary.my-2.my-sm-0(type='submit') Send
+              form#message-form.ajaxForm.form-inline.w-100(action="" method="POST")
+                    .d-flex.flex-row.w-100
+                        input.form-control.mr-2.w-100(type='text' placeholder='Message' name='body')
+                        button.btn.btn-primary.my-2.my-sm-0(type='submit') Send
           .messages.h-100.overflow-auto
               .list-group.list-group-flush
-              
+      #members.h-100
+          ul.nav.flex-column.navbar-light.bg-light.h-100.border-left.text-nowrap.nav-pills.p-2
+              li.nav-item.static
+                  a.nav-link.mb-1.btn-secondary.action-button#add-member-button.ml-1(href="#" data-action="addMember") Add Member        
 link(rel='stylesheet' href='https://use.fontawesome.com/releases/v5.8.2/css/all.css')
 script(src='https://code.jquery.com/jquery-3.3.1.min.js')
 script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js')
