@@ -76,7 +76,7 @@ module.exports = function (app, socket) {
                 }]
             }).then(message => {
                 message.destroy().then(deletedMessages => {
-                    socket.sendToUser("deleteMessage", member.Group.mapData, member.user)
+                    socket.send("deleteMessage", message.mapData, message.group, message.channel)
                 })
             })
         }).catch(error => {

@@ -161,7 +161,7 @@ $(document).ready(function () {
                     case "delete":
                         switch(type[2]){
                             case "Message":
-                                if (currentChannel == message.context) messagesContainer.find(`li[data-id]=${message.body.id}`).remove()
+                                if (currentChannel == message.context) messagesContainer.find(`li[data-id=${message.body.id}]`).remove()
                                 break;
                             case "Channel":
                                 channelsContainer.find(`li[data-id=${message.body.id}]`).remove()
