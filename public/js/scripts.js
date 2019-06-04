@@ -248,8 +248,12 @@ $(document).ready(function () {
                 .attr("href", link)
                 .attr("data-context", id)
                 .attr("data-action", action).text(text))
-                actionsContainer.append(editForm)
-                actionsContainer.append(deleteForm)
+                if (editPath) {
+                    actionsContainer.append(editForm)
+                }
+                if (deletePath) {
+                    actionsContainer.append(deleteForm)
+                } 
             return buttonContainer.append(flexContainer.append(actionsContainer))
         }
 

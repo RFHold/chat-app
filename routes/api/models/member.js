@@ -63,7 +63,7 @@ module.exports = function (app, socket) {
                         where: { user: sessionUser.id }
                     }]
                 }]
-            }).then(members => {
+            }).then(member => {
                 member.destroy().then(deletedMembers => {
                     socket.send("deleteMember", member.Group.mapData, member.group)
                     socket.sendToUser("deleteMember", member.Group.mapData, member.user)
