@@ -33,6 +33,10 @@ $(document).ready(function () {
         // selectors for the buttons, forms, and containers
         const groupsContainer = $("#groups > ul")
         const channelsDrawer = $("#channels").hide()
+        const membersDrawer = $("#members").hide()
+        const messagesDrawer = $("#view").addClass("d-none")
+        const groupButtons = $("#groupButtons").hide()
+        const channelButtons = $("#channelButtons").hide()
         const channelsContainer = $("#channels > ul")
         const membersContainer = $("#members > ul")
         const messagesContainer = $("#view > .messages > .list-group")
@@ -65,6 +69,7 @@ $(document).ready(function () {
 
             // renders the groups
             const groups = () => {
+                changeView("groups")
                 getGroups().then(groups => { renderGroups(groups) })
             }
             
@@ -185,6 +190,7 @@ $(document).ready(function () {
                 const context = button.attr("data-context")
                 switch (action) {
                     case "channels": 
+                        changeView("channels")
                         session.refreshGroupSocket(context)
                         groupsContainer.find(".action-button").removeClass("active")
                         getChannels(channelsLink(context)).then(channels => { 
@@ -203,9 +209,10 @@ $(document).ready(function () {
                         messageForm.attr("action", "")
                         createChannelButton.attr("href", channelsLink(context)).attr("data-context", context)
                         addMemberButton.attr("href", membersLink(context)).attr("data-context", context)
-                        channelsDrawer.show()
+                        
                         break;
                     case "messages":
+                        changeView("messages")
                         currentChannel = context;
                         channelsContainer.find(".action-button").removeClass("active")
                         getMessages(messagesLink(context)).then(messages => { 
@@ -238,6 +245,28 @@ $(document).ready(function () {
             groupsContainer.find("li:not(.static)").remove()
             for (group of groups) {
                 groupsContainer.append(buildButton(group.channelsAPIPath, group.name, "channels", group.id, groupLink(group.id)))
+            }
+        }
+        // change visible items
+        const changeView = view => {
+            channelsDrawer.hide()
+            membersDrawer.hide()
+            messagesDrawer.addClass("d-none")
+            groupButtons.hide()
+            channelButtons.hide()
+            switch(view){
+                case "groups":
+                groupButtons.show()
+                break
+                case "channels":
+                channelsDrawer.show()
+                channelsButton.show()
+                membersDrawer.show()
+                break
+                case "messages":
+                channelsDrawer.show()
+                messagesDrawer.removeClass("d-none")
+                membersDrawer.show()
             }
         }
 

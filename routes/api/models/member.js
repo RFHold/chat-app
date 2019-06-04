@@ -19,8 +19,12 @@ module.exports = function (app, socket) {
                     group.createMember({
                         user: user.id
                     }).then(member => {
-                        socket.sendToUser("newMember", group.mapData, member.user)
-                        res.status(200).json({ success: true, member: member.mapData })
+                        db.Member.findOne({
+                            where: { id: member.id }
+                        }).then(member => {
+                            socket.sendToUser("newMember", group.mapData, member.user)
+                            res.status(200).json({ success: true, member: member.mapData })
+                        })                     
                     })
                 })
             })
