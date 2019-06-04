@@ -161,7 +161,7 @@ $(document).ready(function () {
                     case "delete":
                         switch(type[2]){
                             case "Message":
-                                if (currentChannel == message.context) messagesContainer.prepend(buildMessage(message.body))
+                                if (currentChannel == message.context) messagesContainer.find(`li[data-id]=${message.body.id}`).remove()
                                 break;
                             case "Channel":
                                 channelsContainer.find(`li[data-id=${message.body.id}]`).remove()
@@ -255,7 +255,7 @@ $(document).ready(function () {
 
         // constructs the message and puts it in the message div
         const buildMessage = (message, deletePath) => {
-            const messageContainer = $("<li>").addClass("list-group-item")
+            const messageContainer = $("<li>").addClass("list-group-item").attr("data-id", message.id)
             const messageSpan = $(`<span>`).html(`${message.username}: ${message.body}`)
             const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
             const deleteMessage = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action", deletePath)
