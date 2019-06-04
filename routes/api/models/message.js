@@ -27,7 +27,7 @@ module.exports = function (app, socket) {
                             model: db.User
                         }]
                     }).then(message => {
-                        socket.send("message", message.mapData, message.group, message.channel)
+                        socket.send("newMessage", message.mapData, message.group, message.channel)
                         res.status(200).json({ success: true, message: message.mapData })
                     })     
                 })
@@ -63,4 +63,24 @@ module.exports = function (app, socket) {
         });
     });
 
+    app.delete("/api/message/:message", function (req, res) {
+        session.user(req).then(sessionUser => {
+            db.Message.findOne({
+                where: { id: req.params.message },
+                include: [{
+                    model: db.Group,
+                    include: [{
+                        model: db.Message,
+                        where: { user: sessionUser.id }
+                    }]
+                }]
+            }).then(message => {
+                message.destroy().then(deletedMessages => {
+                    socket.send("deleteMessage", message.mapData, message.group, message.channel)
+                })
+            })
+        }).catch(error => {
+            res.status(500).json({ error: error })
+        });
+    });
 };

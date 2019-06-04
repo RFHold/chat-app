@@ -143,17 +143,37 @@ $(document).ready(function () {
         const listeners = (session) => {
 
             const socketHandler = (message) => {
-                switch (message.type) {
-                    case "message":
-                        if (currentChannel == message.context) messagesContainer.prepend(buildMessage(message.body))
+                const type = message.type.match("([a-z]+)+([A-Z][a-z]+)")
+                switch (type[1]){
+                    case "new":
+                        switch(type[2]){
+                            case "Message":
+                                if (currentChannel == message.context) messagesContainer.prepend(buildMessage(message.body, messageLink(message.body.id)))
+                                break;
+                            case "Channel":
+                                channelsContainer.append(buildButton(message.body.messagesAPIPath, message.body.name, "messages", message.body.id, channelLink(message.body.id)))
+                                break;
+                            case "Member":
+                                groupsContainer.append(buildButton(message.body.channelsAPIPath, message.body.name, "channels", message.body.id, groupLink(message.body.id)))
+                                break;
+
+                        }
                         break;
-                    case "channel":
-                        channelsContainer.append(buildButton(message.body.messagesAPIPath, message.body.name, "messages", message.body.id))
-                        break;
-                    case "member":
-                        groupsContainer.append(buildButton(message.body.channelsAPIPath, message.body.name, "channels", message.body.id, groupLink(message.body.id)))
-                        break;
+                    case "delete":
+                        switch(type[2]){
+                            case "Message":
+                                if (currentChannel == message.context) messagesContainer.find(`li[data-id=${message.body.id}]`).remove()
+                                break;
+                            case "Channel":
+                                channelsContainer.find(`li[data-id=${message.body.id}]`).remove()
+                                break;
+                            case "Member":
+                                groupsContainer.find(`li[data-id=${message.body.id}]`).remove()
+                                break;
+
+                        }
                 }
+               
             }
 
             session.onSocket = socketHandler
@@ -171,7 +191,7 @@ $(document).ready(function () {
                             channelsContainer.find("li:not(.static)").remove()
                             messagesContainer.find(".list-group-item").remove()
                             for (channel of channels) {
-                                channelsContainer.append(buildButton(channel.messagesAPIPath, channel.name, "messages", channel.id))
+                                channelsContainer.append(buildButton(channel.messagesAPIPath, channel.name, "messages", channel.id, channelLink(channel.id)))
                             }
                         })
                         getMembers(membersLink(context)).then(members => {
@@ -191,7 +211,7 @@ $(document).ready(function () {
                         getMessages(messagesLink(context)).then(messages => { 
                             messagesContainer.find(".list-group-item").remove()
                             for (message of messages) {
-                                messagesContainer.prepend(buildMessage(message))
+                                messagesContainer.prepend(buildMessage(message, messageLink(message.id)))
                             }
                         })
                         messageForm.attr("action", messagesLink(context))
@@ -223,8 +243,8 @@ $(document).ready(function () {
 
         // constructs the button for channels 
         const buildButton = (link, text, action, id, deletePath, editPath) => {
-            const buttonContainer = $("<li>").addClass("nav-item")
-            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center")
+            const buttonContainer = $("<li>").addClass("nav-item").attr("data-id",id)
+            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
             const actionsContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center")
             const deleteForm = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action",deletePath)
             deleteForm.append($("<button>").addClass("btn btn-outline-danger ").attr("type", "submit").html(`<i class="fas fa-trash-alt "></i>`))
@@ -235,15 +255,23 @@ $(document).ready(function () {
                 .attr("href", link)
                 .attr("data-context", id)
                 .attr("data-action", action).text(text))
-                flexContainer.append(editForm)
-                flexContainer.append(deleteForm)
-            return buttonContainer.append(flexContainer)
+                if (editPath) {
+                    actionsContainer.append(editForm)
+                }
+                if (deletePath) {
+                    actionsContainer.append(deleteForm)
+                } 
+            return buttonContainer.append(flexContainer.append(actionsContainer))
         }
 
         // constructs the message and puts it in the message div
-        const buildMessage = (message) => {
-            const messageContainer = $("<li>").addClass("list-group-item").html(`${message.username}: ${message.body}`)
-            return messageContainer
+        const buildMessage = (message, deletePath) => {
+            const messageContainer = $("<li>").addClass("list-group-item").attr("data-id", message.id)
+            const messageSpan = $(`<span>`).html(`${message.username}: ${message.body}`)
+            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
+            const deleteMessage = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action", deletePath)
+            deleteMessage.append($("<button>").addClass("btn btn-outline-danger btn-sm").attr("type","sumbit").html(`<i class = "fas fa-trash-alt"></li>`))
+            return messageContainer.append(flexContainer.append(messageSpan, deleteMessage))
         }
 
         // gets the messages for a given channel

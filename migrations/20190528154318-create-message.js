@@ -11,17 +11,20 @@ module.exports = {
       user: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        references: { model: 'Users', key: 'id' }
+        references: { model: 'Users', key: 'id' },
+        onDelete: "CASCADE"
       },
       group: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        references: { model: 'Groups', key: 'id' }
+        references: { model: 'Groups', key: 'id' },
+        onDelete: "CASCADE"
       },
       channel: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        references: { model: 'Channels', key: 'id' }
+        references: { model: 'Channels', key: 'id' },
+        onDelete: "CASCADE"
       },
       body: {
         allowNull: false,
