@@ -52,7 +52,7 @@ module.exports = function (app, socket) {
                 const group = groups[0]
                 group.destroy().then(deletedGroups => {
                     for(member of group.Members) {
-                        socket.sendToUser("deleteMember", group.mapData, member.user)
+                        socket.sendToUser("deleteGroup", group.mapData, member.user)
                     }
                 })
             })
