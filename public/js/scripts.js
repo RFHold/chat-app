@@ -170,7 +170,7 @@ $(document).ready(function () {
                             channelsContainer.find("li:not(.static)").remove()
                             messagesContainer.find(".list-group-item").remove()
                             for (channel of channels) {
-                                channelsContainer.append(buildButton(channel.messagesAPIPath, channel.name, "messages", channel.id))
+                                channelsContainer.append(buildButton(channel.messagesAPIPath, channel.name, "messages", channel.id, channelLink(channel.id)))
                             }
                         })
                         messageForm.attr("action", "")

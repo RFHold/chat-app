@@ -34,15 +34,18 @@ module.exports = (sequelize, DataTypes) => {
     // associations can be defined here
     this.belongsTo(models.User, {
       foreignKey: 'user',
-      constraints: true
+      constraints: true,
+      onDelete: "CASCADE"
     });
     this.belongsTo(models.Group, {
       foreignKey: 'group',
-      constraints: true
+      constraints: true,
+      onDelete: "CASCADE"
     });
     this.belongsTo(models.Channel, {
       foreignKey: 'channel',
-      constraints: true
+      constraints: true,
+      onDelete: "CASCADE"
     });
   };
   return Message;

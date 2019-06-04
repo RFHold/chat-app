@@ -28,15 +28,18 @@ module.exports = (sequelize, DataTypes) => {
     // associations can be defined here
     this.hasMany(models.Group, {
       foreignKey: 'user',
-      constraints: true
+      constraints: true,
+      onDelete: "CASCADE"
     });
     this.hasMany(models.Member, {
       foreignKey: 'user',
-      constraints: true
+      constraints: true,
+      onDelete: "CASCADE"
     });
     this.hasMany(models.Message, {
       foreignKey: 'user',
-      constraints: true
+      constraints: true,
+      onDelete: "CASCADE"
     });
   };
   return User;
