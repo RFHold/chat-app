@@ -164,7 +164,7 @@ $(document).ready(function () {
                                 if (currentChannel == message.context) messagesContainer.prepend(buildMessage(message.body))
                                 break;
                             case "Channel":
-                                channelsContainer.find(`li[data-id=${message.body.id}`).remove()
+                                channelsContainer.find(`li[data-id=${message.body.id}]`).remove()
                                 break;
                             case "Member":
                                 groupsContainer.find(`li[data-id=${message.body.id}]`).remove()
@@ -254,9 +254,13 @@ $(document).ready(function () {
         }
 
         // constructs the message and puts it in the message div
-        const buildMessage = (message) => {
-            const messageContainer = $("<li>").addClass("list-group-item").html(`${message.username}: ${message.body}`)
-            return messageContainer
+        const buildMessage = (message, deletePath) => {
+            const messageContainer = $("<li>").addClass("list-group-item")
+            const messageSpan = $(`<span>`).html(`${message.username}: ${message.body}`)
+            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
+            const deleteMessage = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action", deletePath)
+            deleteMessage.append($("<button>").addClass("btn btn-outline-danger btn-sm").attr("type","sumbit").html(`<i class = "fas fa-trash-alt"></li>`))
+            return messageContainer.append(flexContainer.append(messageSpan, deleteMessage))
         }
 
         // gets the messages for a given channel
