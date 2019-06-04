@@ -52,4 +52,26 @@ module.exports = function (app, socket) {
         });
     });
 
+    app.delete("/api/member/:member", function (req, res) {
+        session.user(req).then(sessionUser => {
+            db.Member.findOne({
+                where: { id: req.params.member },
+                include: [{
+                    model: db.Group,
+                    include: [{
+                        model: db.Member,
+                        where: { user: sessionUser.id }
+                    }]
+                }]
+            }).then(members => {
+                member.destroy().then(deletedMembers => {
+                    socket.send("deleteMember", member.Group.mapData, member.group)
+                    socket.sendToUser("deleteMember", member.Group.mapData, member.user)
+                }
+            )}
+            )
+        }).catch(error => {
+            res.status(500).json({ error: error })
+        });
+    });
 };

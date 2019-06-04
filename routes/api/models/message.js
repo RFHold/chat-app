@@ -63,4 +63,24 @@ module.exports = function (app, socket) {
         });
     });
 
+    app.delete("/api/message/:message", function (req, res) {
+        session.user(req).then(sessionUser => {
+            db.Message.findOne({
+                where: { id: req.params.message },
+                include: [{
+                    model: db.Group,
+                    include: [{
+                        model: db.Message,
+                        where: { user: sessionUser.id }
+                    }]
+                }]
+            }).then(message => {
+                message.destroy().then(deletedMessages => {
+                    socket.sendToUser("deleteMessage", member.Group.mapData, member.user)
+                })
+            })
+        }).catch(error => {
+            res.status(500).json({ error: error })
+        });
+    });
 };
