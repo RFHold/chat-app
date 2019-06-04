@@ -17,7 +17,7 @@ module.exports = function (app, socket) {
                     name: req.body.name,
                     description: req.body.description
                 }).then(channel => {
-                    socket.send("channel", channel.mapData, channel.group)
+                    socket.send("newChannel", channel.mapData, channel.group)
                     res.status(200).json({ success: true, channel: channel.mapData })
                 })
             })
