@@ -65,8 +65,8 @@ module.exports = function (app, socket) {
 
     app.delete("/api/message/:message", function (req, res) {
         session.user(req).then(sessionUser => {
-            db.Member.findOne({
-                where: { id: req.params.member },
+            db.Message.findOne({
+                where: { id: req.params.message },
                 include: [{
                     model: db.Group,
                     include: [{

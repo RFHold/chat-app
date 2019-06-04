@@ -147,10 +147,10 @@ $(document).ready(function () {
                     case "new":
                         switch(type[2]){
                             case "Message":
-                                if (currentChannel == message.context) messagesContainer.prepend(buildMessage(message.body))
+                                if (currentChannel == message.context) messagesContainer.prepend(buildMessage(message.body, messageLink(message.body.id)))
                                 break;
                             case "Channel":
-                                channelsContainer.append(buildButton(message.body.messagesAPIPath, message.body.name, "messages", message.body.id))
+                                channelsContainer.append(buildButton(message.body.messagesAPIPath, message.body.name, "messages", message.body.id, channelLink(message.body.id)))
                                 break;
                             case "Member":
                                 groupsContainer.append(buildButton(message.body.channelsAPIPath, message.body.name, "channels", message.body.id, groupLink(message.body.id)))
@@ -204,7 +204,7 @@ $(document).ready(function () {
                         getMessages(messagesLink(context)).then(messages => { 
                             messagesContainer.find(".list-group-item").remove()
                             for (message of messages) {
-                                messagesContainer.prepend(buildMessage(message))
+                                messagesContainer.prepend(buildMessage(message, messageLink(message.id)))
                             }
                         })
                         messageForm.attr("action", messagesLink(context))
