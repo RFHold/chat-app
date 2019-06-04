@@ -27,7 +27,7 @@ module.exports = function (app, socket) {
                             model: db.User
                         }]
                     }).then(message => {
-                        socket.send("message", message.mapData, message.group, message.channel)
+                        socket.send("newMessage", message.mapData, message.group, message.channel)
                         res.status(200).json({ success: true, message: message.mapData })
                     })     
                 })
