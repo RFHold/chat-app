@@ -217,7 +217,7 @@ $(document).ready(function () {
         // constructs the button for channels 
         const buildButton = (link, text, action, id, deletePath, editPath) => {
             const buttonContainer = $("<li>").addClass("nav-item")
-            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center")
+            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
             const actionsContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center")
             const deleteForm = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action",deletePath)
             deleteForm.append($("<button>").addClass("btn btn-outline-danger ").attr("type", "submit").html(`<i class="fas fa-trash-alt "></i>`))
@@ -228,9 +228,9 @@ $(document).ready(function () {
                 .attr("href", link)
                 .attr("data-context", id)
                 .attr("data-action", action).text(text))
-                flexContainer.append(editForm)
-                flexContainer.append(deleteForm)
-            return buttonContainer.append(flexContainer)
+                actionsContainer.append(editForm)
+                actionsContainer.append(deleteForm)
+            return buttonContainer.append(flexContainer.append(actionsContainer))
         }
 
         // constructs the message and puts it in the message div
