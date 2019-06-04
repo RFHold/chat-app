@@ -41,4 +41,24 @@ module.exports = function (app, socket) {
         });
     })
 
+    app.delete("/api/group/:group", function (req, res) {
+        session.user(req).then(sessionUser => {
+            sessionUser.getGroups({
+                where: { id: req.params.group },
+                include: [{
+                    model: db.Member
+                }]
+            }).then(groups => {
+                const group = groups[0]
+                group.destroy().then(deletedGroups => {
+                    for(member of group.Members) {
+                        socket.sendToUser("deleteMember", group.mapData, member.user)
+                    }
+                })
+            })
+        }).catch(error => {
+            res.status(500).json({ error: error })
+        });
+    });
+
 };
