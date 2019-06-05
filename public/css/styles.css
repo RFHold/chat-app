@@ -2,7 +2,4 @@ body,html{
     height: 100%;
     width: 100%;
 }
-.h-view {
-    height: calc(100% - 56px);
-}
 

@@ -332,7 +332,6 @@ $(document).ready(function () {
         // constructs the message and puts it in the message div
         const buildMessage = (message, deletePath) => {
             const timestamp = new Date(message.timestamp)
-            console.log(timestamp.getHours());
             const stamp = `${(timestamp.getHours()%12 === 0) ? "12" : timestamp.getHours()%12}:${timestamp.getMinutes().pad()} ${(timestamp.getHours() >= 12) ? "PM" : "AM"}`
             const messageContainer = $("<li>").addClass("list-group-item").attr("data-id", message.id)
             const messageSpan = $(`<span>`).addClass("text-wrap").html(`<small class="text-muted">${stamp}</small> <strong>${message.username}:</strong> ${message.body}`)
@@ -411,7 +410,7 @@ $(document).ready(function () {
             })
         }
 
-        // shows the create channle modal and waits for form success
+        // shows the create channel modal and waits for form success
         const createChannelModal = (link) => {
             return new Promise(function (resolve, reject) {
                 const modal = $("#createChannelModal")
