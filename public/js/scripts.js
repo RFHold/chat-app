@@ -155,6 +155,7 @@ $(document).ready(function () {
         }
 
         const eventHandler = (message) => {
+            if (message.type === "ping") return true
             const type = message.type.match("([a-z]+)+([A-Z][a-z]+)")
             const object = message.body
             switch (type[1]) {

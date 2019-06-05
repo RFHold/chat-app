@@ -4,6 +4,9 @@ module.exports = function (app) {
     // general/user socket route
     app.ws('/ws', (ws, req) => {
         this.clients.push({ socket: ws, uid: req.session.userID })
+        const keepAlive = setInterval(function (){
+            ws.send(JSON.stringify({type: "ping", timestamp: new Date()}))
+        }, 5000)
 
         ws.on('message', msg => {
             for (client of this.clients) {
@@ -12,6 +15,7 @@ module.exports = function (app) {
         })
 
         ws.on('close', () => {
+            clearInterval(keepAlive)
             console.log('WebSocket was closed')
             for (i in this.clients) {
                 const client = this.clients[i]
@@ -29,6 +33,10 @@ module.exports = function (app) {
         if (!this.groups[req.params.group]) this.groups[req.params.group] = []
         this.groups[req.params.group].push({ socket: ws, uid: req.session.userID })
 
+        const keepAlive = setInterval(function () {
+            ws.send(JSON.stringify({ type: "ping", timestamp: new Date() }))
+        }, 5000)
+
         ws.on('message', msg => {
             console.log(msg);
             for (client of this.groups[req.params.group]) {
@@ -37,6 +45,7 @@ module.exports = function (app) {
         })
 
         ws.on('close', () => {
+            clearInterval(keepAlive)
             console.log('WebSocket was closed')
             for (i in this.groups[req.params.group]) {
                 const client = this.groups[req.params.group][i]
