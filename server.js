@@ -4,6 +4,8 @@ const enableWs = require('express-ws')
 const Sockets = require("./sockets/socketRoutes");
 const path = require("path")
 const MySQLStore = require('connect-mysql')(session)
+const env = process.env.NODE_ENV || 'development';
+const config = require(__dirname + '/config/config.js')[env];
 
 // needed for .env file
 require('dotenv').config()
@@ -16,6 +18,17 @@ const wss = enableWs(app)
 global.rootPath = path.resolve(__dirname);
 const PORT = process.env.PORT || 3000;
 
+let dbConfig;
+if (config.use_env_variable) {
+    dbConfig = process.env[config.use_env_variable]
+} else {
+    dbConfig = {
+        user: process.env.DBUser,
+        password: process.env.DBPassword,
+        database: process.env.DB
+    };
+}
+
 app.use(session({
     secret: process.env.SECRET,
     resave: false,
@@ -27,11 +40,7 @@ app.use(session({
         expires: 1000 * 60 * 60 * 24 * 3
     },
     store: new MySQLStore({
-        config: {
-            user: process.env.DBUser,
-            password: process.env.DBPassword,
-            database: process.env.DB
-        }
+        config: dbConfig
     })
 }));
 
