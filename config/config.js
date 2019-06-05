@@ -16,11 +16,7 @@ const config = {
     "dialect": "mysql"
   },
   "production": {
-    "username": process.env.DBUser,
-    "password": process.env.DBPassword,
-    "database": process.env.DB,
-    "host": process.env.DBHost,
-    "dialect": "mysql"
+    "use_env_variable": "JAWSDB_URL"
   }
 }
 
