@@ -76,6 +76,7 @@ $(document).ready(function () {
                 getGroups().then(groups => {
                     groupsContainer.find("li:not(.static)").remove()
                     groupButtons.find("*").remove()
+                    if (groups.length === 0) createGroupModal().then(group => { })
                     for (group of groups) {
                         eventHandler({ type: "newGroup", body: group })
                     }
@@ -184,6 +185,7 @@ $(document).ready(function () {
                             if (currentChannel == object.id) changeView("channels")
                             channelsContainer.find(`li[data-id=${object.id}]`).remove()
                             channelButtons.find(`div[data-id=${object.id}]`).remove()
+                            if (channelButtons.find(`div`).length === 0) createChannelModal(channelsLink(currentGroup)).then(channel => { })
                             break;
                         case "Member":
                             membersContainer.find(`li[data-id=${object.id}]`).remove()
@@ -192,6 +194,7 @@ $(document).ready(function () {
                             if (currentGroup == object.id) changeView("groups")
                             groupsContainer.find(`li[data-id=${object.id}]`).remove()
                             groupButtons.find(`div[data-id=${object.id}]`).remove()
+                            if (groupButtons.find(`div`).length === 0) createGroupModal().then(group => { })
                             break;
                     }
                     break;
@@ -219,6 +222,7 @@ $(document).ready(function () {
                             channelsContainer.find("li:not(.static)").remove()
                             channelButtons.find("*").remove()
                             messagesContainer.find(".list-group-item").remove()
+                            if (channels.length === 0) createChannelModal(channelsLink(context)).then(channel => { })
                             for (channel of channels) {
                                 eventHandler({ type: "newChannel", body: channel })
                             }
