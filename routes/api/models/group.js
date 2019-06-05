@@ -13,7 +13,8 @@ module.exports = function (app, socket) {
                 group.createMember({
                     user: sessionUser.id
                 }).then(member => {
-                    socket.sendToUser("newMember", group.mapData, member.user)
+                    socket.sendToUser("newGroup", group.mapData, member.user)
+                    socket.send("newMember", member.mapData, member.group)
                     res.status(200).json({ success: true, group: group.mapData })
                 })
             })

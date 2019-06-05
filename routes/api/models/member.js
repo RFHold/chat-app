@@ -22,7 +22,7 @@ module.exports = function (app, socket) {
                         db.Member.findOne({
                             where: { id: member.id }
                         }).then(member => {
-                            socket.sendToUser("newMember", group.mapData, member.user)
+                            socket.sendToUser("newGroup", group.mapData, member.user)
                             res.status(200).json({ success: true, member: member.mapData })
                         })                     
                     })
@@ -69,8 +69,8 @@ module.exports = function (app, socket) {
                 }]
             }).then(member => {
                 member.destroy().then(deletedMembers => {
-                    socket.send("deleteMember", member.Group.mapData, member.group)
-                    socket.sendToUser("deleteMember", member.Group.mapData, member.user)
+                    socket.send("deleteMember", member.mapData, member.group)
+                    socket.sendToUser("deleteGroup", member.Group.mapData, member.user)
                 }
             )}
             )

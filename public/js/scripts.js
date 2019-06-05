@@ -34,12 +34,12 @@ $(document).ready(function () {
         const groupsContainer = $("#groups > ul")
         const channelsDrawer = $("#channels").hide()
         const membersDrawer = $("#members").hide()
-        const messagesDrawer = $("#view").addClass("d-none")
-        const groupButtons = $("#groupButtons").hide()
+        const messagesDrawer = $("#messages").hide()
+        const groupButtons = $("#groupButtons")
         const channelButtons = $("#channelButtons").hide()
         const channelsContainer = $("#channels > ul")
         const membersContainer = $("#members > ul")
-        const messagesContainer = $("#view > .messages > .list-group")
+        const messagesContainer = $("#message-list > .list-group")
         const messageForm = $("#message-form")
         const createChannelButton = $("#create-channel-button")
         const addMemberButton = $("#add-member-button")
@@ -70,7 +70,12 @@ $(document).ready(function () {
             // renders the groups
             const groups = () => {
                 changeView("groups")
-                getGroups().then(groups => { renderGroups(groups) })
+                getGroups().then(groups => { 
+                    groupsContainer.find("li:not(.static)").remove()
+                    for (group of groups) {
+                        eventHandler({ type: "newGroup", body: group })
+                    }
+                 })
             }
             
             // show login modal
@@ -144,44 +149,54 @@ $(document).ready(function () {
             })
         }
 
+        const eventHandler = (message) => {
+            const type = message.type.match("([a-z]+)+([A-Z][a-z]+)")
+            const object = message.body
+            switch (type[1]) {
+                case "new":
+                    switch (type[2]) {
+                        case "Message":
+                            if (currentChannel == message.context) messagesContainer.prepend(buildMessage(object, messageLink(object.id)))
+                            break;
+                        case "Channel":
+                            channelsContainer.append(buildButton(messagesLink(object.id), object.name, "messages", object.id, channelLink(object.id)))
+                            channelButtons.append(buildCard(messagesLink(object.id), object.name, object.description, "messages", object.id))
+                            break;
+                        case "Member":
+                            membersContainer.append(buildButton(memberLink(object.id), object.username, "member", object.id, memberLink(object.id)))
+                            break;
+                        case "Group":
+                            groupsContainer.append(buildButton(channelsLink(object.id), object.name, "channels", object.id, groupLink(object.id)))
+                            groupButtons.append(buildCard(channelsLink(object.id), object.name, object.description, "channels", object.id))
+                            break;
+                    }
+                    break;
+                case "delete":
+                    switch (type[2]) {
+                        case "Message":
+                            if (currentChannel == message.context) messagesContainer.find(`li[data-id=${object.id}]`).remove()
+                            break;
+                        case "Channel":
+                            if (currentChannel == object.id) changeView("channels")
+                            channelsContainer.find(`li[data-id=${object.id}]`).remove()
+                            break;
+                        case "Member":
+                            membersContainer.find(`li[data-id=${object.id}]`).remove()
+                            break;
+                        case "Group":
+                            if (currentGroup == object.id) changeView("groups")
+                            groupsContainer.find(`li[data-id=${object.id}]`).remove()
+                            break;
+                    }
+                    break;
+            }
+
+        }
+
         // listens for input and connects to socketss
         const listeners = (session) => {
 
-            const socketHandler = (message) => {
-                const type = message.type.match("([a-z]+)+([A-Z][a-z]+)")
-                switch (type[1]){
-                    case "new":
-                        switch(type[2]){
-                            case "Message":
-                                if (currentChannel == message.context) messagesContainer.prepend(buildMessage(message.body, messageLink(message.body.id)))
-                                break;
-                            case "Channel":
-                                channelsContainer.append(buildButton(message.body.messagesAPIPath, message.body.name, "messages", message.body.id, channelLink(message.body.id)))
-                                break;
-                            case "Member":
-                                groupsContainer.append(buildButton(message.body.channelsAPIPath, message.body.name, "channels", message.body.id, groupLink(message.body.id)))
-                                break;
-
-                        }
-                        break;
-                    case "delete":
-                        switch(type[2]){
-                            case "Message":
-                                if (currentChannel == message.context) messagesContainer.find(`li[data-id=${message.body.id}]`).remove()
-                                break;
-                            case "Channel":
-                                channelsContainer.find(`li[data-id=${message.body.id}]`).remove()
-                                break;
-                            case "Member":
-                                groupsContainer.find(`li[data-id=${message.body.id}]`).remove()
-                                break;
-
-                        }
-                }
-               
-            }
-
-            session.onSocket = socketHandler
+            session.onSocket = eventHandler
 
             $(document).on("click", ".action-button", function (e) {
                 e.preventDefault()
@@ -191,20 +206,21 @@ $(document).ready(function () {
                 switch (action) {
                     case "channels": 
                         changeView("channels")
+                        currentGroup = context;
                         session.refreshGroupSocket(context)
                         groupsContainer.find(".action-button").removeClass("active")
                         getChannels(channelsLink(context)).then(channels => { 
                             channelsContainer.find("li:not(.static)").remove()
                             messagesContainer.find(".list-group-item").remove()
                             for (channel of channels) {
-                                channelsContainer.append(buildButton(channel.messagesAPIPath, channel.name, "messages", channel.id, channelLink(channel.id)))
+                                eventHandler({ type: "newChannel", body: channel })
                             }
                         })
                         getMembers(membersLink(context)).then(members => {
                             membersContainer.find("li:not(.static)").remove()
-                        for (member of members){
-                            membersContainer.append(buildButton(memberLink(member.id), member.username, "member", member.id,memberLink(member.id) ))
-                        }
+                            for (member of members){
+                                eventHandler({ type: "newMember", body: member })
+                            }
                         })
                         messageForm.attr("action", "")
                         createChannelButton.attr("href", channelsLink(context)).attr("data-context", context)
@@ -218,7 +234,7 @@ $(document).ready(function () {
                         getMessages(messagesLink(context)).then(messages => { 
                             messagesContainer.find(".list-group-item").remove()
                             for (message of messages) {
-                                messagesContainer.prepend(buildMessage(message, messageLink(message.id)))
+                                eventHandler({ type: "newMessage", body: message, context: context })
                             }
                         })
                         messageForm.attr("action", messagesLink(context))
@@ -239,34 +255,27 @@ $(document).ready(function () {
                 button.addClass("active")
             })
         }
-
-        // renders the groups into the groupsContainer
-        const renderGroups = (groups) => {
-            groupsContainer.find("li:not(.static)").remove()
-            for (group of groups) {
-                groupsContainer.append(buildButton(group.channelsAPIPath, group.name, "channels", group.id, groupLink(group.id)))
-            }
-        }
         // change visible items
         const changeView = view => {
             channelsDrawer.hide()
             membersDrawer.hide()
-            messagesDrawer.addClass("d-none")
+            messagesDrawer.hide()
             groupButtons.hide()
             channelButtons.hide()
             switch(view){
                 case "groups":
-                groupButtons.show()
-                break
+                    groupButtons.show()
+                    break
                 case "channels":
-                channelsDrawer.show()
-                channelsButton.show()
-                membersDrawer.show()
-                break
+                    channelsDrawer.show()
+                    channelButtons.show()
+                    membersDrawer.show()
+                    break
                 case "messages":
-                channelsDrawer.show()
-                messagesDrawer.removeClass("d-none")
-                membersDrawer.show()
+                    channelsDrawer.show()
+                    messagesDrawer.show()
+                    membersDrawer.show()
+                    break
             }
         }
 
@@ -293,13 +302,22 @@ $(document).ready(function () {
             return buttonContainer.append(flexContainer.append(actionsContainer))
         }
 
+        // constructs the button for channels 
+        const buildCard = (link, title, body, action, id) => {
+            const cardContainer = $("<div>").addClass("card border-primary m-3 action-button").attr("data-id", id).attr("href", link).attr("data-context", id).attr("data-action", action).css("cursor", "pointer")
+            const cardBody = $("<div>").addClass("card-body")
+            const cardTitle = $("<div>").addClass("card-header").text(title)
+            const cardText = $("<p>").addClass("card-text").text(body)
+            return cardContainer.append(cardTitle, cardBody.append(cardText))
+        }
+
         // constructs the message and puts it in the message div
         const buildMessage = (message, deletePath) => {
             const messageContainer = $("<li>").addClass("list-group-item").attr("data-id", message.id)
-            const messageSpan = $(`<span>`).html(`${message.username}: ${message.body}`)
+            const messageSpan = $(`<span>`).addClass("text-wrap").html(`<small class="text-muted"></small><strong>${message.username}:</strong> ${message.body}`)
             const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
             const deleteMessage = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action", deletePath)
-            deleteMessage.append($("<button>").addClass("btn btn-outline-danger btn-sm").attr("type","sumbit").html(`<i class = "fas fa-trash-alt"></li>`))
+            deleteMessage.append($("<button>").addClass("btn btn-outline-danger btn-sm").attr("type","submit").html(`<i class = "fas fa-trash-alt"></li>`))
             return messageContainer.append(flexContainer.append(messageSpan, deleteMessage))
         }
 
