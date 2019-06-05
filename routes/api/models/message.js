@@ -50,7 +50,7 @@ module.exports = function (app, socket) {
                             where: { user: sessionUser.id }
                         }]
                     }]
-                }], sort: [updatedAt, descending]
+                }], order: [['updatedAt', 'DESC']]
             }).then(messages => {
                 res.status(200).json({
                     success: true, messages: messages.map(function (message) {
