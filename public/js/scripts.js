@@ -1,3 +1,9 @@
+Number.prototype.pad = function (size) {
+    var s = String(this);
+    while (s.length < (size || 2)) { s = "0" + s; }
+    return s;
+}
+
 $(document).ready(function () {
 
     // submits a form through ajax and triggers the success event
@@ -326,7 +332,7 @@ $(document).ready(function () {
         // constructs the message and puts it in the message div
         const buildMessage = (message, deletePath) => {
             const timestamp = new Date(message.timestamp)
-            const stamp = `${timestamp.getHours()}:${timestamp.getMinutes()}`
+            const stamp = `${timestamp.getHours()%12}:${timestamp.getMinutes().pad()} ${(timestamp.getHours() > 12) ? "PM" : "AM"}`
             const messageContainer = $("<li>").addClass("list-group-item").attr("data-id", message.id)
             const messageSpan = $(`<span>`).addClass("text-wrap").html(`<small class="text-muted">${stamp}</small> <strong>${message.username}:</strong> ${message.body}`)
             const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
