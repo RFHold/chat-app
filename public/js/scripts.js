@@ -33,8 +33,13 @@ $(document).ready(function () {
         // selectors for the buttons, forms, and containers
         const groupsContainer = $("#groups > ul")
         const channelsDrawer = $("#channels").hide()
+        const membersDrawer = $("#members").hide()
+        const messagesDrawer = $("#messages").hide()
+        const groupButtons = $("#groupButtons")
+        const channelButtons = $("#channelButtons").hide()
         const channelsContainer = $("#channels > ul")
-        const messagesContainer = $("#view > .messages > .list-group")
+        const membersContainer = $("#members > ul")
+        const messagesContainer = $("#message-list > .list-group")
         const messageForm = $("#message-form")
         const createChannelButton = $("#create-channel-button")
         const addMemberButton = $("#add-member-button")
@@ -42,11 +47,15 @@ $(document).ready(function () {
 
         //request links for api
         const groupsLink = (channel) => { return `/api/groups` }
+        const groupLink = (group) => { return `/api/group/${group}` }
         const groupsWSLink = (group) => { return `/ws/groups/${group}` }
         const WSLink = () => { return `/ws` }
         const membersLink = (group) => { return `/api/members/${group}` }
+        const memberLink = (group) => { return `/api/member/${group}` }
         const channelsLink = (group) => { return `/api/channels/${group}` }
+        const channelLink = (group) => { return `/api/channel/${group}` }
         const messagesLink = (channel) => { return `/api/messages/${channel}` }
+        const messageLink = (channel) => { return `/api/message/${channel}` }
 
         // constructs the session 
         this.Session = function() {
@@ -60,7 +69,13 @@ $(document).ready(function () {
 
             // renders the groups
             const groups = () => {
-                getGroups().then(groups => { renderGroups(groups) })
+                changeView("groups")
+                getGroups().then(groups => { 
+                    groupsContainer.find("li:not(.static)").remove()
+                    for (group of groups) {
+                        eventHandler({ type: "newGroup", body: group })
+                    }
+                 })
             }
             
             // show login modal
@@ -134,24 +149,54 @@ $(document).ready(function () {
             })
         }
 
+        const eventHandler = (message) => {
+            const type = message.type.match("([a-z]+)+([A-Z][a-z]+)")
+            const object = message.body
+            switch (type[1]) {
+                case "new":
+                    switch (type[2]) {
+                        case "Message":
+                            if (currentChannel == message.context) messagesContainer.prepend(buildMessage(object, messageLink(object.id)))
+                            break;
+                        case "Channel":
+                            channelsContainer.append(buildButton(messagesLink(object.id), object.name, "messages", object.id, channelLink(object.id)))
+                            channelButtons.append(buildCard(messagesLink(object.id), object.name, object.description, "messages", object.id))
+                            break;
+                        case "Member":
+                            membersContainer.append(buildButton(memberLink(object.id), object.username, "member", object.id, memberLink(object.id)))
+                            break;
+                        case "Group":
+                            groupsContainer.append(buildButton(channelsLink(object.id), object.name, "channels", object.id, groupLink(object.id)))
+                            groupButtons.append(buildCard(channelsLink(object.id), object.name, object.description, "channels", object.id))
+                            break;
+                    }
+                    break;
+                case "delete":
+                    switch (type[2]) {
+                        case "Message":
+                            if (currentChannel == message.context) messagesContainer.find(`li[data-id=${object.id}]`).remove()
+                            break;
+                        case "Channel":
+                            if (currentChannel == object.id) changeView("channels")
+                            channelsContainer.find(`li[data-id=${object.id}]`).remove()
+                            break;
+                        case "Member":
+                            membersContainer.find(`li[data-id=${object.id}]`).remove()
+                            break;
+                        case "Group":
+                            if (currentGroup == object.id) changeView("groups")
+                            groupsContainer.find(`li[data-id=${object.id}]`).remove()
+                            break;
+                    }
+                    break;
+            }
+
+        }
+
         // listens for input and connects to socketss
         const listeners = (session) => {
 
-            const socketHandler = (message) => {
-                switch (message.type) {
-                    case "message":
-                        if (currentChannel == message.context) messagesContainer.prepend(buildMessage(message.body))
-                        break;
-                    case "channel":
-                        channelsContainer.append(buildButton(message.body.messagesAPIPath, message.body.name, "messages", message.body.id))
-                        break;
-                    case "member":
-                        groupsContainer.append(buildButton(message.body.channelsAPIPath, message.body.name, "channels", message.body.id))
-                        break;
-                }
-            }
-
-            session.onSocket = socketHandler
+            session.onSocket = eventHandler
 
             $(document).on("click", ".action-button", function (e) {
                 e.preventDefault()
@@ -160,27 +205,36 @@ $(document).ready(function () {
                 const context = button.attr("data-context")
                 switch (action) {
                     case "channels": 
+                        changeView("channels")
+                        currentGroup = context;
                         session.refreshGroupSocket(context)
                         groupsContainer.find(".action-button").removeClass("active")
                         getChannels(channelsLink(context)).then(channels => { 
                             channelsContainer.find("li:not(.static)").remove()
                             messagesContainer.find(".list-group-item").remove()
                             for (channel of channels) {
-                                channelsContainer.append(buildButton(channel.messagesAPIPath, channel.name, "messages", channel.id))
+                                eventHandler({ type: "newChannel", body: channel })
+                            }
+                        })
+                        getMembers(membersLink(context)).then(members => {
+                            membersContainer.find("li:not(.static)").remove()
+                            for (member of members){
+                                eventHandler({ type: "newMember", body: member })
                             }
                         })
                         messageForm.attr("action", "")
                         createChannelButton.attr("href", channelsLink(context)).attr("data-context", context)
                         addMemberButton.attr("href", membersLink(context)).attr("data-context", context)
-                        channelsDrawer.show()
+                        
                         break;
                     case "messages":
+                        changeView("messages")
                         currentChannel = context;
                         channelsContainer.find(".action-button").removeClass("active")
                         getMessages(messagesLink(context)).then(messages => { 
                             messagesContainer.find(".list-group-item").remove()
                             for (message of messages) {
-                                messagesContainer.prepend(buildMessage(message.body))
+                                eventHandler({ type: "newMessage", body: message, context: context })
                             }
                         })
                         messageForm.attr("action", messagesLink(context))
@@ -201,30 +255,70 @@ $(document).ready(function () {
                 button.addClass("active")
             })
         }
-
-        // renders the groups into the groupsContainer
-        const renderGroups = (groups) => {
-            groupsContainer.find("li:not(.static)").remove()
-            for (group of groups) {
-                groupsContainer.append(buildButton(group.channelsAPIPath, group.name, "channels", group.id))
+        // change visible items
+        const changeView = view => {
+            channelsDrawer.hide()
+            membersDrawer.hide()
+            messagesDrawer.hide()
+            groupButtons.hide()
+            channelButtons.hide()
+            switch(view){
+                case "groups":
+                    groupButtons.show()
+                    break
+                case "channels":
+                    channelsDrawer.show()
+                    channelButtons.show()
+                    membersDrawer.show()
+                    break
+                case "messages":
+                    channelsDrawer.show()
+                    messagesDrawer.show()
+                    membersDrawer.show()
+                    break
             }
         }
 
         // constructs the button for channels 
-        const buildButton = (link, text, action, id) => {
-            const buttonContainer = $("<li>").addClass("nav-item")
-            buttonContainer.append($("<a>")
+        const buildButton = (link, text, action, id, deletePath, editPath) => {
+            const buttonContainer = $("<li>").addClass("nav-item").attr("data-id",id)
+            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
+            const actionsContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center")
+            const deleteForm = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action",deletePath)
+            deleteForm.append($("<button>").addClass("btn btn-outline-danger ").attr("type", "submit").html(`<i class="fas fa-trash-alt "></i>`))
+            const editForm = $("<form>").addClass("ajaxForm m-1").attr("method", "PATCH").attr("action",editPath)
+            editForm.append($("<button>").addClass("btn btn-outline-secondary ").attr("type", "submit").html(`<i class="fas fa-pen"></i>`))
+            flexContainer.append($("<a>")
                 .addClass("nav-link action-button")
                 .attr("href", link)
                 .attr("data-context", id)
                 .attr("data-action", action).text(text))
-            return buttonContainer
+                if (editPath) {
+                    actionsContainer.append(editForm)
+                }
+                if (deletePath) {
+                    actionsContainer.append(deleteForm)
+                } 
+            return buttonContainer.append(flexContainer.append(actionsContainer))
+        }
+
+        // constructs the button for channels 
+        const buildCard = (link, title, body, action, id) => {
+            const cardContainer = $("<div>").addClass("card border-primary m-3 action-button").attr("data-id", id).attr("href", link).attr("data-context", id).attr("data-action", action).css("cursor", "pointer")
+            const cardBody = $("<div>").addClass("card-body")
+            const cardTitle = $("<div>").addClass("card-header").text(title)
+            const cardText = $("<p>").addClass("card-text").text(body)
+            return cardContainer.append(cardTitle, cardBody.append(cardText))
         }
 
         // constructs the message and puts it in the message div
-        const buildMessage = (message) => {
-            const messageContainer = $("<li>").addClass("list-group-item").text(message)
-            return messageContainer
+        const buildMessage = (message, deletePath) => {
+            const messageContainer = $("<li>").addClass("list-group-item").attr("data-id", message.id)
+            const messageSpan = $(`<span>`).addClass("text-wrap").html(`<small class="text-muted"></small><strong>${message.username}:</strong> ${message.body}`)
+            const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
+            const deleteMessage = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action", deletePath)
+            deleteMessage.append($("<button>").addClass("btn btn-outline-danger btn-sm").attr("type","submit").html(`<i class = "fas fa-trash-alt"></li>`))
+            return messageContainer.append(flexContainer.append(messageSpan, deleteMessage))
         }
 
         // gets the messages for a given channel
@@ -235,6 +329,19 @@ $(document).ready(function () {
                     method: "GET"
                 }).then(function (response) {
                     resolve(response.messages);
+                }).catch(function (error) {
+                    reject(error);
+                });
+            })
+        }
+        // gets the members for a given group.
+        const getMembers = (link) => {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: link,
+                    method: "GET"
+                }).then(function (response) {
+                    resolve(response.members);
                 }).catch(function (error) {
                     reject(error);
                 });

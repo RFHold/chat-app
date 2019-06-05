@@ -13,7 +13,8 @@ module.exports = function (app, socket) {
                 group.createMember({
                     user: sessionUser.id
                 }).then(member => {
-                    socket.sendToUser("member", group.mapData, member.user)
+                    socket.sendToUser("newGroup", group.mapData, member.user)
+                    socket.send("newMember", member.mapData, member.group)
                     res.status(200).json({ success: true, group: group.mapData })
                 })
             })
@@ -40,5 +41,25 @@ module.exports = function (app, socket) {
             res.status(500).json({ error: error })
         });
     })
+
+    app.delete("/api/group/:group", function (req, res) {
+        session.user(req).then(sessionUser => {
+            sessionUser.getGroups({
+                where: { id: req.params.group },
+                include: [{
+                    model: db.Member
+                }]
+            }).then(groups => {
+                const group = groups[0]
+                group.destroy().then(deletedGroups => {
+                    for(member of group.Members) {
+                        socket.sendToUser("deleteGroup", group.mapData, member.user)
+                    }
+                })
+            })
+        }).catch(error => {
+            res.status(500).json({ error: error })
+        });
+    });
 
 };

@@ -1,46 +1,50 @@
     
 doctype html
 head
-  meta(charset='UTF-8')
-  meta(name='viewport' content='width=device-width, initial-scale=1.0')
-  meta(http-equiv='X-UA-Compatible' content='ie=edge')
-  title= title
-  link(rel='stylesheet' href='/css/reset.css')
-  link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css')
-  link(rel='stylesheet' href='/css/styles.css')
-  link(rel='stylesheet' href='/css/typography.css')
-// Navbar
-// Content
-#wrap.h-100
-  include components/createGroup.pug
-  include components/createChannel.pug
-  include components/addMember.pug
-  include components/login.pug
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    meta(http-equiv='X-UA-Compatible' content='ie=edge')
+    title= title
+    link(rel='stylesheet' href='/css/reset.css')
+    link(rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css')
+    link(rel='stylesheet' href='/css/styles.css')
+    link(rel='stylesheet' href='/css/typography.css')
+#wrap.h-100.w-100.d-flex.flex-column
+    include components/createGroup.pug
+    include components/createChannel.pug
+    include components/addMember.pug
+    include components/login.pug
 
-  #header
-      nav.navbar.navbar-dark.bg-dark.justify-content-between
-          a.navbar-brand(href="/") DiaLOG
-          form#logout-form.ajaxForm.d-inline(method="POST" action="/api/logout")
-              a.btn.btn-secondary.my-2.my-sm-0.action-button#logout-button(href="/logout" data-action="logout") Logout
+    #header
+        nav.navbar.navbar-dark.bg-dark.justify-content-between
+            a.navbar-brand(href="/") DiaLOG
+            form#logout-form.ajaxForm.d-inline(method="POST" action="/api/logout")
+                a.btn.btn-secondary.my-2.my-sm-0.action-button#logout-button(href="/logout" data-action="logout") Logout
 
-  .d-flex.flex-row.h-view
-      #groups.h-100
-          ul.nav.flex-column.navbar-light.bg-light.h-100.border-right.text-nowrap.nav-pills.p-2
-              li.nav-item.static
-                  a.nav-link.mb-1.btn-secondary.action-button#create-group-button(href="/createGroup" data-action="createGroup") Create Group
-      #channels.h-100
-          ul.nav.flex-column.navbar-light.bg-light.h-100.border-right.text-nowrap.nav-pills.p-2
-              li.nav-item.static.d-flex.flex-row
-                  a.nav-link.mb-1.btn-secondary.action-button#create-channel-button(href="#" data-action="createChannel") Create Channel
-                  a.nav-link.mb-1.btn-light.action-button#add-member-button.ml-1(href="#" data-action="addMember") Add Member
-      #view.w-100.h-100.position-relative.d-flex.flex-column
-          nav.navbar.w-100.navbar-light.bg-light.border-bottom
-              form#message-form.ajaxForm.form-inline(action="" method="POST")
-                  input.form-control.mr-sm-2(type='text' placeholder='Message' name='body')
-                  button.btn.btn-primary.my-2.my-sm-0(type='submit') Send
-          .messages.h-100.overflow-auto
-              .list-group.list-group-flush
-              
+    .d-flex.flex-row.h-100
+        #groups.h-100
+            ul.nav.flex-column.navbar-light.bg-light.h-100.border-right.text-nowrap.nav-pills.p-2
+                li.nav-item.static
+                    a.nav-link.mb-1.btn-secondary.action-button#create-group-button(href="/createGroup" data-action="createGroup") Create Group
+        #channels.h-100
+            ul.nav.flex-column.navbar-light.bg-light.h-100.border-right.text-nowrap.nav-pills.p-2
+                li.nav-item.static
+                    a.nav-link.mb-1.btn-secondary.action-button#create-channel-button(href="#" data-action="createChannel") Create Channel              
+        #messages.w-100.h-100
+            .d-flex.flex-column.w-100.h-100
+                nav.navbar.w-100.navbar-light.bg-light.border-bottom
+                    form#message-form.ajaxForm.form-inline.w-100(action="" method="POST")
+                            .d-flex.flex-row.w-100
+                                input.form-control.mr-2.w-100(type='text' placeholder='Message' name='body')
+                                button.btn.btn-primary.my-2.my-sm-0(type='submit') Send
+                #message-list.h-100.overflow-auto
+                    .list-group.list-group-flush
+        #groupButtons.w-100.h-100
+        #channelButtons.w-100.h-100
+        #members.h-100
+            ul.nav.flex-column.navbar-light.bg-light.h-100.border-left.text-nowrap.nav-pills.p-2
+                li.nav-item.static
+                    a.nav-link.mb-1.btn-secondary.action-button#add-member-button.ml-1(href="#" data-action="addMember") Add Member        
 link(rel='stylesheet' href='https://use.fontawesome.com/releases/v5.8.2/css/all.css')
 script(src='https://code.jquery.com/jquery-3.3.1.min.js')
 script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js')

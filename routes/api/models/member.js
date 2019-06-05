@@ -19,8 +19,12 @@ module.exports = function (app, socket) {
                     group.createMember({
                         user: user.id
                     }).then(member => {
-                        socket.sendToUser("member", group.mapData, member.user)
-                        res.status(200).json({ success: true, member: member.mapData })
+                        db.Member.findOne({
+                            where: { id: member.id }
+                        }).then(member => {
+                            socket.sendToUser("newGroup", group.mapData, member.user)
+                            res.status(200).json({ success: true, member: member.mapData })
+                        })                     
                     })
                 })
             })
@@ -32,7 +36,7 @@ module.exports = function (app, socket) {
     app.get("/api/members/:group", function (req, res) {
         session.user(req).then(sessionUser => {
             db.Member.findAll({
-                include: [{
+                include: [{model: db.User},{
                     model: db.Group,
                     where: { id: req.params.group },
                     include: [{
@@ -52,4 +56,26 @@ module.exports = function (app, socket) {
         });
     });
 
+    app.delete("/api/member/:member", function (req, res) {
+        session.user(req).then(sessionUser => {
+            db.Member.findOne({
+                where: { id: req.params.member },
+                include: [{
+                    model: db.Group,
+                    include: [{
+                        model: db.Member,
+                        where: { user: sessionUser.id }
+                    }]
+                }]
+            }).then(member => {
+                member.destroy().then(deletedMembers => {
+                    socket.send("deleteMember", member.mapData, member.group)
+                    socket.sendToUser("deleteGroup", member.Group.mapData, member.user)
+                }
+            )}
+            )
+        }).catch(error => {
+            res.status(500).json({ error: error })
+        });
+    });
 };

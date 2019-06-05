@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     getterMethods: {
       mapData() {
-        return { id: this.id, user: this.user, group: this.group }
+        return { id: this.id, user: this.user, group: this.group , username: (this.User) ? this.User.username : this.user}    
       }
     }
   });
@@ -24,11 +24,13 @@ module.exports = (sequelize, DataTypes) => {
     // associations can be defined here
     this.belongsTo(models.User, {
       foreignKey: 'user',
-      constraints: true
+      constraints: true,
+      onDelete: "CASCADE"
     });
     this.belongsTo(models.Group, {
       foreignKey: 'group',
-      constraints: true
+      constraints: true,
+      onDelete: "CASCADE"
     });
   };
   return Member;
