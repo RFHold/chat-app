@@ -45,6 +45,9 @@ $(document).ready(function () {
         const addMemberButton = $("#add-member-button")
         const logoutForm = $("#logout-form")
 
+        let currentGroup;
+        let currentChannel;
+
         //request links for api
         const groupsLink = (channel) => { return `/api/groups` }
         const groupLink = (group) => { return `/api/group/${group}` }
@@ -70,8 +73,9 @@ $(document).ready(function () {
             // renders the groups
             const groups = () => {
                 changeView("groups")
-                getGroups().then(groups => { 
+                getGroups().then(groups => {
                     groupsContainer.find("li:not(.static)").remove()
+                    groupButtons.find("*").remove()
                     for (group of groups) {
                         eventHandler({ type: "newGroup", body: group })
                     }
@@ -179,6 +183,7 @@ $(document).ready(function () {
                         case "Channel":
                             if (currentChannel == object.id) changeView("channels")
                             channelsContainer.find(`li[data-id=${object.id}]`).remove()
+                            channelButtons.find(`div[data-id=${object.id}]`).remove()
                             break;
                         case "Member":
                             membersContainer.find(`li[data-id=${object.id}]`).remove()
@@ -186,6 +191,7 @@ $(document).ready(function () {
                         case "Group":
                             if (currentGroup == object.id) changeView("groups")
                             groupsContainer.find(`li[data-id=${object.id}]`).remove()
+                            groupButtons.find(`div[data-id=${object.id}]`).remove()
                             break;
                     }
                     break;
@@ -211,6 +217,7 @@ $(document).ready(function () {
                         groupsContainer.find(".action-button").removeClass("active")
                         getChannels(channelsLink(context)).then(channels => { 
                             channelsContainer.find("li:not(.static)").remove()
+                            channelButtons.find("*").remove()
                             messagesContainer.find(".list-group-item").remove()
                             for (channel of channels) {
                                 eventHandler({ type: "newChannel", body: channel })

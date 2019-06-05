@@ -20,9 +20,11 @@ module.exports = function (app, socket) {
                         user: user.id
                     }).then(member => {
                         db.Member.findOne({
-                            where: { id: member.id }
+                            where: { id: member.id },
+                            include: [{model: db.User}]
                         }).then(member => {
                             socket.sendToUser("newGroup", group.mapData, member.user)
+                            socket.send("newMember", member.mapData, member.group)
                             res.status(200).json({ success: true, member: member.mapData })
                         })                     
                     })
