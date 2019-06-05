@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
           return `/api/messages/${this.id}`
         },
         mapData (){
-          return { id: this.id, name: this.name, messagesAPIPath: this.messagesAPIPath }
+          return { id: this.id, name: this.name, description: this.description, messagesAPIPath: this.messagesAPIPath }
         }
       }
   });
