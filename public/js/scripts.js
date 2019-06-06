@@ -1,3 +1,9 @@
+Number.prototype.pad = function (size) {
+    var s = String(this);
+    while (s.length < (size || 2)) { s = "0" + s; }
+    return s;
+}
+
 $(document).ready(function () {
 
     // submits a form through ajax and triggers the success event
@@ -45,6 +51,9 @@ $(document).ready(function () {
         const addMemberButton = $("#add-member-button")
         const logoutForm = $("#logout-form")
 
+        let currentGroup;
+        let currentChannel;
+
         //request links for api
         const groupsLink = (channel) => { return `/api/groups` }
         const groupLink = (group) => { return `/api/group/${group}` }
@@ -70,8 +79,10 @@ $(document).ready(function () {
             // renders the groups
             const groups = () => {
                 changeView("groups")
-                getGroups().then(groups => { 
+                getGroups().then(groups => {
                     groupsContainer.find("li:not(.static)").remove()
+                    groupButtons.find("*").remove()
+                    if (groups.length === 0) createGroupModal().then(group => { })
                     for (group of groups) {
                         eventHandler({ type: "newGroup", body: group })
                     }
@@ -150,6 +161,7 @@ $(document).ready(function () {
         }
 
         const eventHandler = (message) => {
+            if (message.type === "ping") return true
             const type = message.type.match("([a-z]+)+([A-Z][a-z]+)")
             const object = message.body
             switch (type[1]) {
@@ -179,6 +191,8 @@ $(document).ready(function () {
                         case "Channel":
                             if (currentChannel == object.id) changeView("channels")
                             channelsContainer.find(`li[data-id=${object.id}]`).remove()
+                            channelButtons.find(`div[data-id=${object.id}]`).remove()
+                            if (channelButtons.find(`div`).length === 0) createChannelModal(channelsLink(currentGroup)).then(channel => { })
                             break;
                         case "Member":
                             membersContainer.find(`li[data-id=${object.id}]`).remove()
@@ -186,6 +200,8 @@ $(document).ready(function () {
                         case "Group":
                             if (currentGroup == object.id) changeView("groups")
                             groupsContainer.find(`li[data-id=${object.id}]`).remove()
+                            groupButtons.find(`div[data-id=${object.id}]`).remove()
+                            if (groupButtons.find(`div`).length === 0) createGroupModal().then(group => { })
                             break;
                     }
                     break;
@@ -211,7 +227,9 @@ $(document).ready(function () {
                         groupsContainer.find(".action-button").removeClass("active")
                         getChannels(channelsLink(context)).then(channels => { 
                             channelsContainer.find("li:not(.static)").remove()
+                            channelButtons.find("*").remove()
                             messagesContainer.find(".list-group-item").remove()
+                            if (channels.length === 0) createChannelModal(channelsLink(context)).then(channel => { })
                             for (channel of channels) {
                                 eventHandler({ type: "newChannel", body: channel })
                             }
@@ -313,8 +331,10 @@ $(document).ready(function () {
 
         // constructs the message and puts it in the message div
         const buildMessage = (message, deletePath) => {
+            const timestamp = new Date(message.timestamp)
+            const stamp = `${(timestamp.getHours()%12 === 0) ? "12" : timestamp.getHours()%12}:${timestamp.getMinutes().pad()} ${(timestamp.getHours() >= 12) ? "PM" : "AM"}`
             const messageContainer = $("<li>").addClass("list-group-item").attr("data-id", message.id)
-            const messageSpan = $(`<span>`).addClass("text-wrap").html(`<small class="text-muted"></small><strong>${message.username}:</strong> ${message.body}`)
+            const messageSpan = $(`<span>`).addClass("text-wrap").html(`<small class="text-muted">${stamp}</small> <strong>${message.username}:</strong> ${message.body}`)
             const flexContainer = $("<div>").addClass("text-nowrap d-flex flex-row align-items-center justify-content-between")
             const deleteMessage = $("<form>").addClass("ajaxForm m-1").attr("method", "DELETE").attr("action", deletePath)
             deleteMessage.append($("<button>").addClass("btn btn-outline-danger btn-sm").attr("type","submit").html(`<i class = "fas fa-trash-alt"></li>`))
@@ -390,7 +410,7 @@ $(document).ready(function () {
             })
         }
 
-        // shows the create channle modal and waits for form success
+        // shows the create channel modal and waits for form success
         const createChannelModal = (link) => {
             return new Promise(function (resolve, reject) {
                 const modal = $("#createChannelModal")
